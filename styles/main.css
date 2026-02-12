@@ -4,21 +4,21 @@
    ========================================= */
 
 :root {
-  /* Colors - Soothing Dark Theme */
-  --bg-primary: #0f0f1a;
-  --bg-secondary: #1a1a2e;
-  --bg-card: #16213e;
+  /* Colors - Light Theme Enforced */
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --text-primary: #1a1a2e;
+  --text-secondary: #5d5d6d;
+  --text-muted: #8b8b9b;
   --accent: #e94560;
-  --accent-glow: rgba(233, 69, 96, 0.3);
+  --accent-glow: rgba(233, 69, 96, 0.15);
   --accent-soft: #533483;
   --success: #4ade80;
-  --text-primary: #f0f0f0;
-  --text-secondary: #a0a0b0;
-  --text-muted: #6b6b7b;
 
   /* Gradients */
   --gradient-accent: linear-gradient(135deg, #e94560, #533483);
-  --gradient-card: linear-gradient(145deg, #1a1a2e, #16213e);
+  --gradient-card: linear-gradient(145deg, #ffffff, #f0f0f0);
   --gradient-success: linear-gradient(135deg, #4ade80, #22c55e);
 
   /* Spacing */
@@ -39,7 +39,7 @@
   --font-size-4xl: 3.5rem;
 
   /* Effects */
-  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
   --shadow-glow: 0 0 30px var(--accent-glow);
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -562,7 +562,7 @@ body {
 
 .home-preview-label {
   font-size: var(--font-size-sm);
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 8px;
   text-align: left;
 }
@@ -591,7 +591,7 @@ body {
 
 .home-preview-total {
   font-size: var(--font-size-sm);
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.9);
   text-align: right;
 }
 
