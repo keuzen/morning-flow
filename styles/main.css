@@ -791,11 +791,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: 8px;
   padding-bottom: var(--space-sm);
   -webkit-overflow-scrolling: touch;
 }
 
 .editor-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -812,9 +814,30 @@ body {
   transform: scale(0.97);
 }
 
-.editor-item.drag-over {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
+.editor-item.drag-over-top::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 4px var(--accent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.editor-item.drag-over-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 4px var(--accent);
+  z-index: 10;
+  pointer-events: none;
 }
 
 .editor-item-drag {
