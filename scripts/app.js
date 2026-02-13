@@ -439,6 +439,16 @@ class RoutineEditor {
         }
       }
     });
+
+    // Select text on focus for all inputs
+    [
+      this.elements.modalEmoji,
+      this.elements.modalStepTitle,
+      this.elements.modalTip,
+      this.elements.modalDuration
+    ].forEach(input => {
+      input.addEventListener('focus', (e) => e.target.select());
+    });
   }
 
   open() {
