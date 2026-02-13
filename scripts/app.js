@@ -66,6 +66,27 @@ const DEFAULT_STEPS = [
   }
 ];
 
+const EMOJI_MAP = {
+  "起床": "🌅", "起きる": "🌅",
+  "水": "💧", "飲む": "💧",
+  "朝食": "🍳", "ご飯": "🍳", "食べる": "🍳",
+  "歯": "🪥", "磨く": "🪥",
+  "顔": "🧼", "洗う": "🧼",
+  "メイク": "💄", "化粧": "💄",
+  "着替え": "👔", "支度": "👔",
+  "仕事": "💻", "作業": "💻", "メール": "📧",
+  "勉強": "📚", "読書": "📖",
+  "運動": "🏃", "ジム": "💪", "ヨガ": "🧘", "筋トレ": "💪", "散歩": "🚶",
+  "シャワー": "🚿", "風呂": "🛀",
+  "トイレ": "🚽",
+  "薬": "💊", "サプリ": "💊",
+  "準備": "🎒", "移動": "🚃", "出発": "🚪",
+  "ゴミ": "🗑️", "掃除": "🧹", "洗濯": "🧺",
+  "ニュース": "📰", "天気": "☀️",
+  "瞑想": "🧘", "ストレッチ": "🙆",
+  "コーヒー": "☕", "お茶": "🍵"
+};
+
 const STORAGE_KEY = 'morningflow_steps';
 
 // =========================================
@@ -398,6 +419,26 @@ class RoutineEditor {
     this.elements.modal.addEventListener('click', (e) => {
       if (e.target === this.elements.modal) this.closeModal();
     });
+
+    // Auto-suggest emoji based on title input
+    this.elements.modalStepTitle.addEventListener('input', (e) => {
+      const title = e.target.value;
+      const currentEmoji = this.elements.modalEmoji.value;
+
+      // Only suggest if emoji field is empty or default star
+      if (currentEmoji === '' || currentEmoji === '⭐') {
+        for (const [keyword, emoji] of Object.entries(EMOJI_MAP)) {
+          if (title.includes(keyword)) {
+            this.elements.modalEmoji.value = emoji;
+            // Add a subtle animation to highlight the change
+            this.elements.modalEmoji.style.transition = 'transform 0.2s';
+            this.elements.modalEmoji.style.transform = 'scale(1.2)';
+            setTimeout(() => this.elements.modalEmoji.style.transform = 'scale(1)', 200);
+            return; // Stop after first match
+          }
+        }
+      }
+    });
   }
 
   open() {
@@ -476,26 +517,53 @@ class RoutineEditor {
   onDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+
+    const item = e.currentTarget;
+    const rect = item.getBoundingClientRect();
+    const offsetY = e.clientY - rect.top;
+    const isBottomHalf = offsetY > rect.height / 2;
+
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+    if (isBottomHalf) {
+      item.classList.add('drag-over-bottom');
+    } else {
+      item.classList.add('drag-over-top');
+    }
   }
 
   onDragEnter(e, item) {
     e.preventDefault();
-    item.classList.add('drag-over');
   }
 
   onDragLeave(e, item) {
-    item.classList.remove('drag-over');
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
   }
 
   onDrop(e, targetIndex) {
     e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
+    const item = e.currentTarget;
+    const scale = item.classList.contains('drag-over-bottom') ? 'bottom' : 'top';
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
 
     if (this.dragSrcIndex === null || this.dragSrcIndex === targetIndex) return;
 
+    // Calculate insertion point
+    // If dropped on top half: insert at targetIndex
+    // If dropped on bottom half: insert at targetIndex + 1
+    // Adjust for removal of src item
+    let insertionIndex = targetIndex;
+    if (scale === 'bottom') insertionIndex++;
+
+    if (this.dragSrcIndex < insertionIndex) {
+      insertionIndex--;
+    }
+
+    // Optimization: if verification shows no change, return
+    if (this.dragSrcIndex === insertionIndex) return;
+
     const steps = loadSteps();
     const [moved] = steps.splice(this.dragSrcIndex, 1);
-    steps.splice(targetIndex, 0, moved);
+    steps.splice(insertionIndex, 0, moved);
 
     steps.forEach((s, i) => s.id = i + 1);
     saveSteps(steps);
@@ -505,7 +573,7 @@ class RoutineEditor {
   onDragEnd() {
     this.dragSrcIndex = null;
     document.querySelectorAll('.editor-item').forEach(el => {
-      el.classList.remove('dragging', 'drag-over');
+      el.classList.remove('dragging', 'drag-over-top', 'drag-over-bottom');
     });
   }
 
@@ -534,11 +602,21 @@ class RoutineEditor {
       const touch = e.touches[0];
       const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
 
-      document.querySelectorAll('.editor-item').forEach(el => el.classList.remove('drag-over'));
+      document.querySelectorAll('.editor-item').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
 
       const targetItem = targetEl?.closest('.editor-item');
       if (targetItem && targetItem !== item) {
-        targetItem.classList.add('drag-over');
+        // Calculate position relative to target item
+        const rect = targetItem.getBoundingClientRect();
+        const offsetY = touch.clientY - rect.top;
+        const isBottomHalf = offsetY > rect.height / 2;
+
+        targetItem.classList.remove('drag-over-top', 'drag-over-bottom');
+        if (isBottomHalf) {
+          targetItem.classList.add('drag-over-bottom');
+        } else {
+          targetItem.classList.add('drag-over-top');
+        }
       }
     }, { passive: false });
 
@@ -554,16 +632,44 @@ class RoutineEditor {
       const targetItem = targetEl?.closest('.editor-item');
 
       if (targetItem && targetItem !== item) {
+        const rect = targetItem.getBoundingClientRect();
+        const touch = e.changedTouches[0];
+        const offsetY = touch.clientY - rect.top;
+        const isBottomHalf = offsetY > rect.height / 2;
+
         const targetIdx = parseInt(targetItem.dataset.index, 10);
-        this.onDrop(
-          { preventDefault: () => { }, currentTarget: targetItem },
-          targetIdx
-        );
+
+        // Mock event for onDrop logic interaction or handle directly
+        // Since onDrop relies on classList for logic (which we just set in touchmove but might have cleared?),
+        // let's replicate logic or force class.
+        // Actually, onDrop uses e.currentTarget which is targetItem.
+        // We need to ensure class is present or pass info.
+        // Let's modify onDrop to accept optional placement arg or read class from targetItem.
+        // We set class in touchmove. It should be there.
+
+        // Wait, onDrop calls e.preventDefault(). We need to construct a fake event or refactor onDrop.
+        // Refactoring onDrop to separate logic is cleaner.
+        // For now, let's just use the logic directly here.
+
+        let insertionIndex = targetIdx;
+        if (isBottomHalf) insertionIndex++;
+
+        if (this.dragSrcIndex < insertionIndex) insertionIndex--;
+
+        if (this.dragSrcIndex !== insertionIndex) {
+          const steps = loadSteps();
+          const [moved] = steps.splice(this.dragSrcIndex, 1);
+          steps.splice(insertionIndex, 0, moved);
+
+          steps.forEach((s, i) => s.id = i + 1);
+          saveSteps(steps);
+          this.renderList();
+        }
       }
 
       item.classList.remove('dragging');
       this.dragSrcIndex = null;
-      document.querySelectorAll('.editor-item').forEach(el => el.classList.remove('drag-over'));
+      document.querySelectorAll('.editor-item').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
     }, { passive: true });
   }
 
