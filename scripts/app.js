@@ -10,59 +10,59 @@
 const DEFAULT_STEPS = [
   {
     id: 1,
-    title: "カーテンを開ける",
+    title: "起床",
     emoji: "🌅",
-    duration: 60,
-    tip: "朝日を浴びると体内時計がリセットされます"
+    duration: 300,
+    tip: "朝日を浴びて体内時計をスイッチON！"
   },
   {
     id: 2,
-    title: "コップ1杯の水を飲む",
+    title: "コップ一杯の水を飲む",
     emoji: "💧",
     duration: 60,
-    tip: "寝ている間に失った水分を補給しましょう"
+    tip: "白湯だとさらに体に優しいです"
   },
   {
     id: 3,
-    title: "顔を洗う",
-    emoji: "🧼",
-    duration: 120,
-    tip: "冷たい水で洗うとスッキリ目が覚めます"
+    title: "歯を磨く",
+    emoji: "🪥",
+    duration: 180,
+    tip: "3分間しっかり磨いて目を覚ましましょう"
   },
   {
     id: 4,
-    title: "着替える",
-    emoji: "👔",
-    duration: 300,
-    tip: "前日に準備しておくとスムーズです"
+    title: "顔を洗う",
+    emoji: "🧼",
+    duration: 180,
+    tip: "冷たい水で毛穴を引き締め！"
   },
   {
     id: 5,
     title: "朝ごはんを食べる",
     emoji: "🍳",
     duration: 600,
-    tip: "しっかり噛んで食べると脳が活性化します"
+    tip: "エネルギーチャージして脳を活性化"
   },
   {
     id: 6,
-    title: "歯を磨く",
-    emoji: "🪥",
-    duration: 180,
-    tip: "丁寧に磨いて1日をフレッシュに"
+    title: "着替える",
+    emoji: "👔",
+    duration: 300,
+    tip: "今日も気合を入れていきましょう"
   },
   {
     id: 7,
     title: "持ち物チェック",
     emoji: "🎒",
-    duration: 120,
-    tip: "財布・鍵・スマホ・定期は持った？"
+    duration: 180,
+    tip: "財布・鍵・スマホ・定期は持ちましたか？"
   },
   {
     id: 8,
-    title: "出発準備OK！",
-    emoji: "🚀",
-    duration: 30,
-    tip: "いってらっしゃい！今日も良い1日を"
+    title: "準備OK",
+    emoji: "👌",
+    duration: 0,
+    tip: "いってらっしゃい！"
   }
 ];
 
@@ -310,7 +310,7 @@ class MorningRoutine {
     const seconds = remaining % 60;
     this.elements.timerText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-    const progress = remaining / total;
+    const progress = total === 0 ? 1 : remaining / total;
     this.elements.timerProgress.style.strokeDashoffset = circumference * (1 - progress);
   }
 
@@ -610,8 +610,8 @@ class RoutineEditor {
 
     const emoji = modal.modalEmoji.value.trim() || '⭐';
     const tip = modal.modalTip.value.trim() || '';
-    const durationMin = parseFloat(modal.modalDuration.value) || 1;
-    const duration = Math.max(30, Math.round(durationMin * 60));
+    const durationMin = parseFloat(modal.modalDuration.value) || 0;
+    const duration = Math.max(0, Math.round(durationMin * 60));
 
     const steps = loadSteps();
 
